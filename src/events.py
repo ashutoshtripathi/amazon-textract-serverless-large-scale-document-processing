@@ -51,7 +51,7 @@ def syncQueueDocument(documentId, bucketName, objectName):
             "documentId": documentId,
             "bucketName": bucketName,
             "objectName": objectName,
-            "features" : ["Text", "Forms", "Tables"]
+            "features" : ["Text"]
     }
 
     return {

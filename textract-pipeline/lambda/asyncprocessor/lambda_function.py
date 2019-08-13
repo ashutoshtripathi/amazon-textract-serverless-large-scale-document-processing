@@ -25,26 +25,7 @@ def startJob(bucketName, objectName, documentId, snsTopic, snsRole, detectForms,
            },
            JobTag = documentId)
     else:
-        features  = []
-        if(detectTables):
-            features.append("TABLES")
-        if(detectForms):
-            features.append("FORMS")
-
-        response = client.start_document_analysis(
-            ClientRequestToken  = documentId,
-            DocumentLocation={
-                'S3Object': {
-                    'Bucket': bucketName,
-                    'Name': objectName
-                }
-            },
-            FeatureTypes=features,
-            NotificationChannel= {
-                  "RoleArn": snsRole,
-                  "SNSTopicArn": snsTopic
-               },
-            JobTag = documentId)
+        print("Should not have come here async do text adv analysis")
 
     return response["JobId"]
 

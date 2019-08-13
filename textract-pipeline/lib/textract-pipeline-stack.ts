@@ -7,6 +7,8 @@ import sqs = require('@aws-cdk/aws-sqs');
 import dynamodb = require('@aws-cdk/aws-dynamodb');
 import lambda = require('@aws-cdk/aws-lambda');
 import s3 = require('@aws-cdk/aws-s3');
+//import es = require('@aws-cdk/aws-lambda');
+
 
 export class TextractPipelineStack extends cdk.Stack {
 
@@ -92,6 +94,14 @@ export class TextractPipelineStack extends cdk.Stack {
       description: 'Textractor layer.',
     });
 
+    // Textractor ElasticLayer layer
+        const elasticLayer = new lambda.LayerVersion(this, 'ElasticLayer', {
+          code: lambda.Code.asset('lambda/elastic'),
+          compatibleRuntimes: [lambda.Runtime.Python37],
+          license: 'Apache-2.0',
+          description: 'Elastic layer.',
+        });
+
     //------------------------------------------------------------
 
     // S3 Event processor
@@ -107,6 +117,7 @@ export class TextractPipelineStack extends cdk.Stack {
       }
     });
     //Layer
+    s3Processor.addLayer(elasticLayer)
     s3Processor.addLayer(helperLayer)
     //Trigger
     s3Processor.addEventSource(new S3EventSource(contentBucket, {
@@ -128,9 +139,10 @@ export class TextractPipelineStack extends cdk.Stack {
         DOCUMENTS_TABLE: documentsTable.tableName,
         OUTPUT_TABLE: outputTable.tableName
       },
-      reservedConcurrentExecutions: 1,
+      reservedConcurrentExecutions: 50,
     });
     //Layer
+    s3BatchProcessor.addLayer(elasticLayer)
     s3BatchProcessor.addLayer(helperLayer)
     //Permissions
     documentsTable.grantReadWriteData(s3BatchProcessor)
@@ -150,6 +162,7 @@ export class TextractPipelineStack extends cdk.Stack {
       }
     });
     //Layer
+    documentProcessor.addLayer(elasticLayer)
     documentProcessor.addLayer(helperLayer)
     //Trigger
     documentProcessor.addEventSource(new DynamoEventSource(documentsTable, {
@@ -177,6 +190,7 @@ export class TextractPipelineStack extends cdk.Stack {
       }
     });
     //Layer
+    syncProcessor.addLayer(elasticLayer)
     syncProcessor.addLayer(helperLayer)
     syncProcessor.addLayer(textractorLayer)
     //Trigger
@@ -197,7 +211,7 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/asyncprocessor'),
       handler: 'lambda_function.lambda_handler',
-      reservedConcurrentExecutions: 1,
+      reservedConcurrentExecutions: 50,
       timeout: 60,
       environment: {
         ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -209,6 +223,7 @@ export class TextractPipelineStack extends cdk.Stack {
     //asyncProcessor.addEnvironment("SNS_TOPIC_ARN", textractServiceRole.topicArn)
 
     //Layer
+    asyncProcessor.addLayer(elasticLayer)
     asyncProcessor.addLayer(helperLayer)
     //Triggers
     // Run async job processor every 5 minutes
@@ -232,8 +247,8 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/jobresultprocessor'),
       handler: 'lambda_function.lambda_handler',
-      memorySize: 2000,
-      reservedConcurrentExecutions: 50,
+      memorySize: 3000,
+      reservedConcurrentExecutions: 100,
       timeout: 900,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
@@ -242,11 +257,12 @@ export class TextractPipelineStack extends cdk.Stack {
       }
     });
     //Layer
+    jobResultProcessor.addLayer(elasticLayer)
     jobResultProcessor.addLayer(helperLayer)
     jobResultProcessor.addLayer(textractorLayer)
     //Triggers
     jobResultProcessor.addEventSource(new SqsEventSource(jobResultsQueue, {
-      batchSize: 1
+      batchSize: 10
     }));
     //Permissions
     outputTable.grantReadWriteData(jobResultProcessor)

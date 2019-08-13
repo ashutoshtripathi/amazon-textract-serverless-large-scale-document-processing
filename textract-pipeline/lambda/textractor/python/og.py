@@ -2,6 +2,8 @@ import json
 from helper import FileHelper, S3Helper
 from trp import Document
 import boto3
+from elasticsearch import Elasticsearch, RequestsHttpConnection
+from requests_aws4auth import AWS4Auth
 
 class OutputGenerator:
     def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb):
@@ -17,6 +19,41 @@ class OutputGenerator:
 
         self.document = Document(self.response)
 
+    def indexDocument(self, bucketName, objectName, text):
+
+        # Update host with endpoint of your Elasticsearch cluster
+        #host = "search--xxxxxxxxxxxxxx.us-east-1.es.amazonaws.com
+        host = "search-testes-3g3d5dag76ssewcvn6wqnvaxyi.us-east-1.es.amazonaws.com"
+        region = 'us-east-1'
+
+        if(text):
+            service = 'es'
+            ss = boto3.Session()
+            credentials = ss.get_credentials()
+            region = ss.region_name
+
+            awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+
+            es = Elasticsearch(
+                hosts = [{'host': host, 'port': 443}],
+                http_auth = awsauth,
+                use_ssl = True,
+                verify_certs = True,
+                connection_class = RequestsHttpConnection
+            )
+
+            document = {
+                "name": "{}".format(objectName),
+                "bucket" : "{}".format(bucketName),
+                "content" : text,
+                "claimid" : "foo",
+                "date" : "12/12/2019"
+            }
+
+            es.index(index="textract", doc_type="document", id=objectName, body=document)
+
+            print("Indexed document")
+
     def saveItem(self, pk, sk, output):
 
         jsonItem = {}
@@ -31,11 +68,14 @@ class OutputGenerator:
         opath = "{}page-{}-text.txt".format(self.outputPath, p)
         S3Helper.writeToS3(text, self.bucketName, opath)
         self.saveItem(self.documentId, "page-{}-Text".format(p), opath)
+        print("elastic opath")
+        print(opath)
+        self.indexDocument(self.bucketName, opath, text)
 
-        textInReadingOrder = page.getTextInReadingOrder()
-        opath = "{}page-{}-text-inreadingorder.txt".format(self.outputPath, p)
-        S3Helper.writeToS3(textInReadingOrder, self.bucketName, opath)
-        self.saveItem(self.documentId, "page-{}-TextInReadingOrder".format(p), opath)
+       # textInReadingOrder = page.getTextInReadingOrder()
+       # opath = "{}page-{}-text-inreadingorder.txt".format(self.outputPath, p)
+       # S3Helper.writeToS3(textInReadingOrder, self.bucketName, opath)
+       # self.saveItem(self.documentId, "page-{}-TextInReadingOrder".format(p), opath)
 
     def _outputForm(self, page, p):
         csvData = []

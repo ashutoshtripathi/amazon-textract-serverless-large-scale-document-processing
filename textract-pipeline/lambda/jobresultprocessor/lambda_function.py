@@ -58,16 +58,13 @@ def processRequest(request):
 
     pages = getJobResults(jobAPI, jobId)
 
-    print("Result pages recieved: {}".format(len(pages)))
-
+    print("Result pages recieved ashu: {}".format(len(pages)))
     dynamodb = AwsHelper().getResource("dynamodb")
     ddb = dynamodb.Table(outputTable)
 
     detectForms = False
     detectTables = False
-    if(jobAPI == "StartDocumentAnalysis"):
-        detectForms = True
-        detectTables = True
+
 
     dynamodb = AwsHelper().getResource('dynamodb')
     ddb = dynamodb.Table(outputTable)

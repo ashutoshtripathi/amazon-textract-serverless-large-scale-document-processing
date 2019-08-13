@@ -34,7 +34,7 @@ def processRequest(request):
         qUrl = request['asyncQueueUrl']
 
     if(qUrl):
-        features = ["Text", "Forms", "Tables"]
+        features = ["Text"]
 
         jsonMessage = { 'documentId' : documentId,
             "features" : features,

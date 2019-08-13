@@ -65,12 +65,7 @@ def processRequest(request):
 
     detectForms = False
     detectTables = False
-    if(jobAPI == "StartDocumentAnalysis"):
-        detectForms = True
-        detectTables = True
 
-    dynamodb = AwsHelper().getResource('dynamodb')
-    ddb = dynamodb.Table(outputTable)
 
     opg = OutputGenerator(jobTag, pages, bucketName, objectName, detectForms, detectTables, ddb)
     opg.run()

@@ -4,6 +4,8 @@ import os
 import csv
 import io
 from boto3.dynamodb.conditions import Key
+from elasticsearch import Elasticsearch, RequestsHttpConnection
+from requests_aws4auth import AWS4Auth
 
 class DynamoDBHelper:
 
