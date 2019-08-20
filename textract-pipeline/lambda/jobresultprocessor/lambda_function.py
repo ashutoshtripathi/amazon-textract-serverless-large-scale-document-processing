@@ -18,7 +18,9 @@ def getJobResults(api, jobId):
     else:
         response = client.get_document_analysis(JobId=jobId)
     pages.append(response)
-    print("Resultset page recieved: {}".format(len(pages)))
+    print("pages below1")
+    print(pages)
+    print("Resultset page recieved21line: {}".format(len(pages)))
     nextToken = None
     if('NextToken' in response):
         nextToken = response['NextToken']
@@ -33,12 +35,14 @@ def getJobResults(api, jobId):
             response = client.get_document_analysis(JobId=jobId, NextToken=nextToken)
 
         pages.append(response)
-        print("Resultset page recieved: {}".format(len(pages)))
+        print("Resultset page recieved line36: {}".format(len(pages)))
         nextToken = None
         if('NextToken' in response):
             nextToken = response['NextToken']
             print("Next token: {}".format(nextToken))
 
+    print("pages below2")
+    print(pages)
     return pages
 
 def processRequest(request):

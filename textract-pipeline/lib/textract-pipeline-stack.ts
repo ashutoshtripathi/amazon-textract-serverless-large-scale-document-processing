@@ -6,6 +6,7 @@ import sns = require('@aws-cdk/aws-sns');
 import sqs = require('@aws-cdk/aws-sqs');
 import dynamodb = require('@aws-cdk/aws-dynamodb');
 import lambda = require('@aws-cdk/aws-lambda');
+//import ec2 = require('@aws-cdk/aws-ec2');
 import s3 = require('@aws-cdk/aws-s3');
 //import es = require('@aws-cdk/aws-lambda');
 
@@ -76,6 +77,8 @@ export class TextractPipelineStack extends cdk.Stack {
     //Trigger
     jobCompletionTopic.subscribeQueue(jobResultsQueue);
 
+    //const vpc = new ec2.VpcNetwork(this, 'vpc-f0888788');
+
     //**********Lambda Functions******************************
 
     // Helper Layer with helper functions
@@ -103,7 +106,6 @@ export class TextractPipelineStack extends cdk.Stack {
         });
 
     //------------------------------------------------------------
-
     // S3 Event processor
     const s3Processor = new lambda.Function(this, 'S3Processor', {
       runtime: lambda.Runtime.Python37,
@@ -139,7 +141,7 @@ export class TextractPipelineStack extends cdk.Stack {
         DOCUMENTS_TABLE: documentsTable.tableName,
         OUTPUT_TABLE: outputTable.tableName
       },
-      reservedConcurrentExecutions: 50,
+      reservedConcurrentExecutions: 50
     });
     //Layer
     s3BatchProcessor.addLayer(elasticLayer)

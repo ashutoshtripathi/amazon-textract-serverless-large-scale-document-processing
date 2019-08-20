@@ -23,7 +23,7 @@ class OutputGenerator:
 
         # Update host with endpoint of your Elasticsearch cluster
         #host = "search--xxxxxxxxxxxxxx.us-east-1.es.amazonaws.com
-        host = "search-testes-3g3d5dag76ssewcvn6wqnvaxyi.us-east-1.es.amazonaws.com"
+        host = "search-search-e4gpteganu5jmvurcd7xymc4hi.us-east-1.es.amazonaws.com"
         region = 'us-east-1'
 
         if(text):

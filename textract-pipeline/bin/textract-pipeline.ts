@@ -4,5 +4,5 @@ import cdk = require('@aws-cdk/cdk');
 import { TextractPipelineStack } from '../lib/textract-pipeline-stack';
 
 const app = new cdk.App();
-new TextractPipelineStack(app, 'TextractPipeline');
+new TextractPipelineStack(app, 'OCRPipeline');
 
