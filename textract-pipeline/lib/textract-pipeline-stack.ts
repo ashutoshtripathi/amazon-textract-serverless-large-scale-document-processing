@@ -149,7 +149,7 @@ export class TextractPipelineStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(s3BatchProcessor)
     s3BatchProcessor.grantInvoke(s3BatchOperationsRole)
-    s3BatchOperationsRole.addToPolicy(new iam.PolicyStatement().addAllResources().addActions("lambda:*"))
+//    s3BatchProcessor.functionArn
 
     //------------------------------------------------------------
 
@@ -272,5 +272,10 @@ export class TextractPipelineStack extends cdk.Stack {
     contentBucket.grantReadWrite(jobResultProcessor)
     existingContentBucket.grantReadWrite(jobResultProcessor)
     jobResultProcessor.addToRolePolicy(new iam.PolicyStatement().addAllResources().addAction("textract:*"))
+
+    let lambdaArns = [s3Processor.functionArn, s3BatchProcessor.functionArn, documentProcessor.functionArn, 
+      syncProcessor.functionArn, asyncProcessor.functionArn, jobResultProcessor.functionArn];
+    s3BatchOperationsRole.addToPolicy(new iam.PolicyStatement().addResources(...lambdaArns).addActions("lambda:*"))
+
   }
 }
