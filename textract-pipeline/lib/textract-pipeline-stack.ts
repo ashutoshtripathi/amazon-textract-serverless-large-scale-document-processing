@@ -141,7 +141,7 @@ export class TextractPipelineStack extends cdk.Stack {
         DOCUMENTS_TABLE: documentsTable.tableName,
         OUTPUT_TABLE: outputTable.tableName
       },
-      reservedConcurrentExecutions: 50
+      reservedConcurrentExecutions: 999
     });
     //Layer
     s3BatchProcessor.addLayer(elasticLayer)
@@ -183,7 +183,7 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/syncprocessor'),
       handler: 'lambda_function.lambda_handler',
-      reservedConcurrentExecutions: 1,
+      reservedConcurrentExecutions: 999,
       timeout: 25,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
@@ -197,7 +197,7 @@ export class TextractPipelineStack extends cdk.Stack {
     syncProcessor.addLayer(textractorLayer)
     //Trigger
     syncProcessor.addEventSource(new SqsEventSource(syncJobsQueue, {
-      batchSize: 1
+      batchSize: 10
     }));
     //Permissions
     contentBucket.grantReadWrite(syncProcessor)
@@ -213,7 +213,7 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/asyncprocessor'),
       handler: 'lambda_function.lambda_handler',
-      reservedConcurrentExecutions: 50,
+      reservedConcurrentExecutions: 999,
       timeout: 60,
       environment: {
         ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -230,7 +230,7 @@ export class TextractPipelineStack extends cdk.Stack {
     //Triggers
     // Run async job processor every 5 minutes
     const rule = new events.EventRule(this, 'Rule', {
-      scheduleExpression: 'rate(2 minutes)',
+      scheduleExpression: 'rate(1 minutes)',
     });
     rule.addTarget(asyncProcessor);
     //Run when a job is successfully complete
@@ -250,7 +250,7 @@ export class TextractPipelineStack extends cdk.Stack {
       code: lambda.Code.asset('lambda/jobresultprocessor'),
       handler: 'lambda_function.lambda_handler',
       memorySize: 3000,
-      reservedConcurrentExecutions: 100,
+      reservedConcurrentExecutions: 999,
       timeout: 900,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
