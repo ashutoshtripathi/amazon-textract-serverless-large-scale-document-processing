@@ -140,7 +140,7 @@ def processRequest(request):
     snsRole = request['snsRole']
 
     i = 0
-    max = 999
+    max = 1
 
     totalJobsScheduled = 0
 

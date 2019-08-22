@@ -141,7 +141,7 @@ export class TextractPipelineStack extends cdk.Stack {
         DOCUMENTS_TABLE: documentsTable.tableName,
         OUTPUT_TABLE: outputTable.tableName
       },
-      reservedConcurrentExecutions: 99
+      reservedConcurrentExecutions: 1
     });
     //Layer
     s3BatchProcessor.addLayer(elasticLayer)
@@ -183,7 +183,7 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/syncprocessor'),
       handler: 'lambda_function.lambda_handler',
-      reservedConcurrentExecutions: 99,
+      reservedConcurrentExecutions: 1,
       timeout: 25,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
@@ -197,7 +197,7 @@ export class TextractPipelineStack extends cdk.Stack {
     syncProcessor.addLayer(textractorLayer)
     //Trigger
     syncProcessor.addEventSource(new SqsEventSource(syncJobsQueue, {
-      batchSize: 10
+      batchSize: 1
     }));
     //Permissions
     contentBucket.grantReadWrite(syncProcessor)
@@ -213,7 +213,7 @@ export class TextractPipelineStack extends cdk.Stack {
       runtime: lambda.Runtime.Python37,
       code: lambda.Code.asset('lambda/asyncprocessor'),
       handler: 'lambda_function.lambda_handler',
-      reservedConcurrentExecutions: 99,
+      reservedConcurrentExecutions: 1,
       timeout: 60,
       environment: {
         ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -250,7 +250,7 @@ export class TextractPipelineStack extends cdk.Stack {
       code: lambda.Code.asset('lambda/jobresultprocessor'),
       handler: 'lambda_function.lambda_handler',
       memorySize: 3000,
-      reservedConcurrentExecutions: 99,
+      reservedConcurrentExecutions: 1,
       timeout: 900,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
@@ -264,7 +264,7 @@ export class TextractPipelineStack extends cdk.Stack {
     jobResultProcessor.addLayer(textractorLayer)
     //Triggers
     jobResultProcessor.addEventSource(new SqsEventSource(jobResultsQueue, {
-      batchSize: 10
+      batchSize: 1
     }));
     //Permissions
     outputTable.grantReadWriteData(jobResultProcessor)
