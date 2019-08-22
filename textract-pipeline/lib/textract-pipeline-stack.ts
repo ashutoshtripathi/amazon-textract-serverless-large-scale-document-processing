@@ -273,9 +273,11 @@ export class TextractPipelineStack extends cdk.Stack {
     existingContentBucket.grantReadWrite(jobResultProcessor)
     jobResultProcessor.addToRolePolicy(new iam.PolicyStatement().addAllResources().addAction("textract:*"))
 
-    let lambdaArns = [s3Processor.functionArn, s3BatchProcessor.functionArn, documentProcessor.functionArn, 
-      syncProcessor.functionArn, asyncProcessor.functionArn, jobResultProcessor.functionArn];
-    s3BatchOperationsRole.addToPolicy(new iam.PolicyStatement().addResources(...lambdaArns).addActions("lambda:*"))
+   // let lambdaArns = [s3Processor.functionArn, s3BatchProcessor.functionArn, documentProcessor.functionArn,
+    //  syncProcessor.functionArn, asyncProcessor.functionArn, jobResultProcessor.functionArn];
+
+   // s3BatchOperationsRole.addToPolicy(new iam.PolicyStatement().addResources(...lambdaArns).addActions("lambda:*"))
+    s3BatchOperationsRole.addToPolicy(new iam.PolicyStatement().addAllResources().addActions("lambda:*"))
 
   }
 }

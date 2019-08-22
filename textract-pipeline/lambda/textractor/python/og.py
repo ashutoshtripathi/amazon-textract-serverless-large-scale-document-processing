@@ -4,6 +4,7 @@ from trp import Document
 import boto3
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
+from datetime import datetime
 
 class OutputGenerator:
     def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb):
@@ -19,7 +20,24 @@ class OutputGenerator:
 
         self.document = Document(self.response)
 
-    def indexDocument(self, bucketName, objectName, text):
+    def indexDocument(self, bucketName, opath, text):
+        objectName = self.objectName;
+        items = objectName.rsplit('/', 1)
+        if len(items) > 1:
+          name = objectName.rsplit('/', 1)[1]
+        elif len(items) == 1:
+          name = objectName.rsplit('/', 1)[0]
+        elif len(items) >=0:
+          name = "UNKNOWN-2019010101"
+
+        parts = name.split('_')[0];
+        print(parts)
+        claimId = parts.split('-')[0]
+        if len(parts.split('-'))==1:
+          date = "20190101"
+        elif len(parts.split('-')) > 1:
+           date = parts.split('-')[1][0:8]
+
 
         # Update host with endpoint of your Elasticsearch cluster
         #host = "search--xxxxxxxxxxxxxx.us-east-1.es.amazonaws.com
@@ -34,6 +52,7 @@ class OutputGenerator:
 
             awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
 
+
             es = Elasticsearch(
                 hosts = [{'host': host, 'port': 443}],
                 http_auth = awsauth,
@@ -41,13 +60,16 @@ class OutputGenerator:
                 verify_certs = True,
                 connection_class = RequestsHttpConnection
             )
+            s3path = "https://"+bucketName+".s3.amazonaws.com/"+objectName
 
             document = {
                 "name": "{}".format(objectName),
                 "bucket" : "{}".format(bucketName),
                 "content" : text,
-                "claimid" : "foo",
-                "date" : "12/12/2019"
+                "claimid" : claimId,
+                "date" : date,
+                "s3path" : s3path,
+                "fileName": name
             }
 
             es.index(index="textract", doc_type="document", id=objectName, body=document)
@@ -68,8 +90,6 @@ class OutputGenerator:
         opath = "{}page-{}-text.txt".format(self.outputPath, p)
         S3Helper.writeToS3(text, self.bucketName, opath)
         self.saveItem(self.documentId, "page-{}-Text".format(p), opath)
-        print("elastic opath")
-        print(opath)
         self.indexDocument(self.bucketName, opath, text)
 
        # textInReadingOrder = page.getTextInReadingOrder()
