@@ -72,7 +72,7 @@ class OutputGenerator:
                 "fileName": name
             }
 
-            es.index(index="textract", doc_type="document", id=objectName, body=document)
+            es.index(index="textract", doc_type="document", id=opath, body=document)
 
             print("Indexed document")
 
