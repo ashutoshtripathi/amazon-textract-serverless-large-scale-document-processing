@@ -41,7 +41,7 @@ class OutputGenerator:
 
         # Update host with endpoint of your Elasticsearch cluster
         #host = "search--xxxxxxxxxxxxxx.us-east-1.es.amazonaws.com
-        host = "search-search-e4gpteganu5jmvurcd7xymc4hi.us-east-1.es.amazonaws.com"
+        host = "search-custom-e4gpteganu5jmvurcd7xymc4hi.us-east-1.es.amazonaws.com"
         region = 'us-east-1'
 
         if(text):
@@ -86,7 +86,8 @@ class OutputGenerator:
         self.ddb.put_item(Item=jsonItem)
 
     def _outputText(self, page, p):
-        text = page.text
+        #text = page.text
+        text = page.getTextInReadingOrder()
         opath = "{}page-{}-text.txt".format(self.outputPath, p)
         S3Helper.writeToS3(text, self.bucketName, opath)
         self.saveItem(self.documentId, "page-{}-Text".format(p), opath)
