@@ -250,7 +250,7 @@ export class TextractPipelineStack extends cdk.Stack {
       code: lambda.Code.asset('lambda/jobresultprocessor'),
       handler: 'lambda_function.lambda_handler',
       memorySize: 3000,
-      reservedConcurrentExecutions: 1,
+      reservedConcurrentExecutions: 50,
       timeout: 900,
       environment: {
         OUTPUT_TABLE: outputTable.tableName,
